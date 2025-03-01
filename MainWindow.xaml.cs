@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
+
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -29,11 +30,13 @@ namespace LinkRenameTool
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            string path =textBox_path.Text;
-            string oldText =textBox_searchFor.Text;
-            string newText=textBox_searchFor.Text;
-            bool r = (bool) checkBox_rekursiv.IsChecked;
+            string path = textBox_path.Text;
+            string oldText = textBox_searchFor.Text;
+            string newText = textBox_replace.Text;
+            bool r = (bool)checkBox_rekursiv.IsChecked;
             execute(path, oldText, newText, r);
+            update_Link();
+            
         }
 
 
@@ -42,16 +45,20 @@ namespace LinkRenameTool
             pathType check = CheckPath(LinkPathName);
             if (check == pathType.invalidPath)
             {
-                MessageBox.Show("invalid Path");
+                // MessageBox.Show($"invalid Path {LinkPathName}");
                 return;
             }
             if (check == pathType.valid_path)
             {
                 List<string> paths = FindLnkFiles(LinkPathName, searchSubdirectory);
+                int count = paths.Count;
                 foreach (string s in paths)
                 {
+                    
                     changeLink(s, oldText, newText);
                 }
+                MessageBox.Show($"{count} Shortcuts found and changed");
+                return;
 
             }
             if (check == pathType.shortcut)
@@ -64,12 +71,23 @@ namespace LinkRenameTool
 
         void changeLink(string LinkPathName, string oldText = ".pdf", string newText = ".txt", bool showMessage = false)
         {
+            LinkPathName = RemoveParentheses(LinkPathName);
             WshShell shell = new WshShell(); //https://learn.microsoft.com/en-us/troubleshoot/windows-client/admin-development/create-desktop-shortcut-with-wsh
             IWshShortcut link = (IWshShortcut)shell.CreateShortcut(LinkPathName);
             string oldPath = link.TargetPath;
-            string newPath = oldPath.Replace(oldText, newText);
+            string newPath = oldPath;
+            try
+            {
+                newPath = oldPath.Replace(oldText, newText);
+                newPath = System.Text.RegularExpressions.Regex.Replace(oldPath, oldText, newText);
+            }
+            catch
+            {
+                //oldPath = newPath;
+            }
+            
             link.TargetPath = newPath;
-            link.Description = "new";
+            //link.Description = "new";
             //link.WorkingDirectory =;
             link.Save();
 
@@ -103,13 +121,45 @@ namespace LinkRenameTool
             return lnkFiles;
         }
 
+        public string RemoveParentheses(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+                return input;
+
+            // Remove leading parenthesis
+            if (input.StartsWith("\""))
+                input = input.Substring(1);
+
+            // Remove trailing parenthesis
+            if (input.EndsWith("\""))
+                input = input.Substring(0, input.Length - 1);
+
+            return input;
+        }
+
+        
 
 
         public pathType CheckPath(string path)
         {
-            if (System.IO.Path.IsPathRooted(path))
+            path = RemoveParentheses(path);
+
+            bool invalidPath = true;
+            try
             {
-               // MessageBox.Show("The path is valid.");
+                if (System.IO.Path.IsPathRooted(path))
+                {
+                    invalidPath = false;
+                }
+            }
+            catch
+            {
+                invalidPath = true;
+
+            }
+            if (!invalidPath)
+            {
+                // MessageBox.Show("The path is valid.");
 
                 if (Directory.Exists(path))
                 {
@@ -125,19 +175,19 @@ namespace LinkRenameTool
                     }
                     else
                     {
-                       // MessageBox.Show("It's a regular file.");
+                        // MessageBox.Show("It's a regular file.");
                         return pathType.regular_File;
                     }
                 }
                 else
                 {
-                   // MessageBox.Show("The path doesn't exist.");
+                    //MessageBox.Show($"The path doesn't exist. {path}");
                     return pathType.invalidPath;
                 }
             }
             else
             {
-             //   MessageBox.Show("The path is not valid.");
+                // MessageBox.Show($"The path is not valid. {path}");
                 return pathType.invalidPath;
             }
         }
@@ -147,6 +197,84 @@ namespace LinkRenameTool
             valid_path,
             invalidPath,
             shortcut
+        }
+
+        private void textBox_path_LostFocus(object sender, RoutedEventArgs e)
+        {
+            update_Link();
+
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            System.Windows.Forms.FolderBrowserDialog folderDialog = new System.Windows.Forms.FolderBrowserDialog();
+
+
+            System.Windows.Forms.DialogResult result = folderDialog.ShowDialog();
+            if (result.ToString() == "OK")
+                textBox_path.Text = folderDialog.SelectedPath;
+        }
+
+        private void Button_Click_2(object sender, RoutedEventArgs e)
+        {
+            Microsoft.Win32.OpenFileDialog openFileDialog = new Microsoft.Win32.OpenFileDialog();
+            openFileDialog.DereferenceLinks = false;
+            openFileDialog.Filter = "Shortcut (*.Ink)|*.Ink|All files (*.*)|*.*";
+            if (openFileDialog.ShowDialog() == true)
+                textBox_path.Text = openFileDialog.FileName;
+        }
+
+        private void textBox_Link_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            update_Link();
+        }
+        void update_Link()
+        {
+            string LinkPathName = textBox_path.Text;
+            LinkPathName=RemoveParentheses(LinkPathName);
+            pathType pathType = CheckPath(LinkPathName);
+            if (pathType != pathType.shortcut)
+            {
+                return;
+            }
+            WshShell shell = new WshShell(); //https://learn.microsoft.com/en-us/troubleshoot/windows-client/admin-development/create-desktop-shortcut-with-wsh
+            IWshShortcut link = (IWshShortcut)shell.CreateShortcut(LinkPathName);
+            try { textBox_Link.Text = link.TargetPath; }
+            catch { }
+
+        }
+        private void textBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            //update_Link();
+        }
+
+        public static readonly DependencyProperty LinkPathNameProperty = DependencyProperty.Register(nameof(LinkPathName), typeof(string), typeof(MainWindow), new PropertyMetadata("\"D:\\100_Nextcloud\\400_Programmierung\\LinkRenameTool\\LinkRenameTool\\Link.lnk\"", OnMyPropertyChanged));
+
+        public string LinkPathName
+        {
+            get => (string)GetValue(LinkPathNameProperty);
+            set => SetValue(LinkPathNameProperty, value);
+        }
+
+        private static void OnMyPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            MainWindow control = d as MainWindow;
+            if (control != null)
+            {
+                string newValue = (string)e.NewValue;
+                string oldValue = (string)e.OldValue;
+
+                // Your logic here
+                control.HandlePropertyChanged(newValue, oldValue);
+            }
+        }
+
+        private void HandlePropertyChanged(string newValue, string oldValue)
+        {
+            // Your custom logic here
+            update_Link();
+            
+            
         }
 
     }
