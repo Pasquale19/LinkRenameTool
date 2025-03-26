@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -36,7 +37,7 @@ namespace LinkRenameTool
             bool r = (bool)checkBox_rekursiv.IsChecked;
             execute(path, oldText, newText, r);
             update_Link();
-            
+
         }
 
 
@@ -54,7 +55,7 @@ namespace LinkRenameTool
                 int count = paths.Count;
                 foreach (string s in paths)
                 {
-                    
+
                     changeLink(s, oldText, newText);
                 }
                 MessageBox.Show($"{count} Shortcuts found and changed");
@@ -64,6 +65,7 @@ namespace LinkRenameTool
             if (check == pathType.shortcut)
             {
                 changeLink(LinkPathName, oldText, newText);
+                MessageBox.Show($"Link changed to {newText}");
             }
 
         }
@@ -85,7 +87,7 @@ namespace LinkRenameTool
             {
                 //oldPath = newPath;
             }
-            
+
             link.TargetPath = newPath;
             //link.Description = "new";
             //link.WorkingDirectory =;
@@ -137,7 +139,7 @@ namespace LinkRenameTool
             return input;
         }
 
-        
+
 
 
         public pathType CheckPath(string path)
@@ -205,21 +207,31 @@ namespace LinkRenameTool
 
         }
 
-        private void Button_Click_1(object sender, RoutedEventArgs e)
+        private void Button_Click_Folder(object sender, RoutedEventArgs e)
         {
             System.Windows.Forms.FolderBrowserDialog folderDialog = new System.Windows.Forms.FolderBrowserDialog();
-
+            pathType t = CheckPath(textBox_path.Text);
+            //if (t == pathType.regular_File || t == pathType.shortcut)
+            //    folderDialog.SelectedPath = RemoveParentheses(textBox_path.Text);
+            if (t == pathType.valid_path)
+                folderDialog.SelectedPath = RemoveParentheses(textBox_path.Text);
 
             System.Windows.Forms.DialogResult result = folderDialog.ShowDialog();
             if (result.ToString() == "OK")
                 textBox_path.Text = folderDialog.SelectedPath;
         }
 
-        private void Button_Click_2(object sender, RoutedEventArgs e)
+        private void Button_Click_Shortcut(object sender, RoutedEventArgs e)
         {
             Microsoft.Win32.OpenFileDialog openFileDialog = new Microsoft.Win32.OpenFileDialog();
             openFileDialog.DereferenceLinks = false;
             openFileDialog.Filter = "Shortcut (*.Ink)|*.Ink|All files (*.*)|*.*";
+            pathType t = CheckPath(textBox_path.Text);
+            if (t == pathType.regular_File || t == pathType.shortcut)
+                openFileDialog.FileName = RemoveParentheses(textBox_path.Text);
+            if (t == pathType.valid_path)
+                openFileDialog.FileName = RemoveParentheses(textBox_path.Text);
+
             if (openFileDialog.ShowDialog() == true)
                 textBox_path.Text = openFileDialog.FileName;
         }
@@ -231,7 +243,7 @@ namespace LinkRenameTool
         void update_Link()
         {
             string LinkPathName = textBox_path.Text;
-            LinkPathName=RemoveParentheses(LinkPathName);
+            LinkPathName = RemoveParentheses(LinkPathName);
             pathType pathType = CheckPath(LinkPathName);
             if (pathType != pathType.shortcut)
             {
@@ -273,9 +285,56 @@ namespace LinkRenameTool
         {
             // Your custom logic here
             update_Link();
-            
-            
+
+
+        }
+        /*
+        readonly static ObservableCollection<string> _networkPaths = new ObservableCollection<string>{
+            @"\\afs\.tu-chemnitz.de\project",
+            @"\\afs\.tu-chemnitz.de\project\mht_transfer",
+            @"\\afs\.tu-chemnitz.de\project\mht_lehre",
+            @"\\afs\.tu-chemnitz.de\project\mht_projekt",
+            @"\\afs\.tu-chemnitz.de\project\mht_studarb",
+            @"\\afs\tu-chemnitz.de\project\mht_haupt",
+            @"\\afs\tu-chemnitz.de\www\root\mb\MHT"
+        };
+
+        public static readonly DependencyProperty NetworkPathProperty = DependencyProperty.Register(nameof(NetworkPath), typeof(ObservableCollection<string>), typeof(MainWindow), new PropertyMetadata(_networkPaths, OnMyPropertyChanged));
+
+        public ObservableCollection<string> NetworkPath
+        {
+            get => (ObservableCollection<string>)GetValue(NetworkPathProperty);
+            set => SetValue(NetworkPathProperty, value);
         }
 
+        public static readonly DependencyProperty ReplaceStringProperty = DependencyProperty.Register(nameof(ReplaceString), typeof(string), typeof(MainWindow), new PropertyMetadata(_networkPaths[1]));
+
+        public string ReplaceString
+        {
+            get => (string)GetValue(LinkPathNameProperty);
+            set => SetValue(LinkPathNameProperty, value);
+        }
+
+
+        private void ComboBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (e.MiddleButton == MouseButtonState.Pressed)
+            {
+                // Get the selected item from ComboBox
+                var selectedValue = Name = cmbbox1.SelectedValue.ToString();
+
+                if (selectedValue != null)
+                {
+                    // Place the selected value into the TextBox
+                    MessageBox.Show($"Selection value changed {selectedValue} Selection value changed {cmbbox1.SelectedItem.ToString()}");
+                }
+            }
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+           string txt= cmbbox1.Text;
+            textBox_replace.Text = txt;
+        }*/
     }
 }

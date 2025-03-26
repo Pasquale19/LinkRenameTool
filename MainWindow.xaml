@@ -34,8 +34,8 @@
             <StackPanel Orientation="Vertical"  Style="{StaticResource stack1}">
                 <StackPanel Orientation="Horizontal">
                     <Label Content="Path:" Target="{Binding ElementName=textBox_path}" Style="{StaticResource label1}"/>
-                    <Button Click="Button_Click_1">select Folder</Button>
-                    <Button Click="Button_Click_2">select Shortcut</Button>
+                    <Button Click="Button_Click_Folder">select Folder</Button>
+                    <Button Click="Button_Click_Shortcut">select Shortcut</Button>
                 </StackPanel>
 
                 <TextBox Name="textBox_path" ToolTip="Enter Path or Link (.Ink)" VerticalAlignment="Center"
@@ -46,11 +46,37 @@
             </StackPanel>
             <StackPanel Style="{StaticResource stack1}" >
                 <Label Content="Suche nach:" Target="{Binding ElementName=textBox_searchFor}" Style="{StaticResource label1}"/>
-                <TextBox Name="textBox_searchFor" ToolTip="Enter old string eg Y:\"></TextBox>
+                <TextBox Name="textBox_searchFor" ToolTip="Enter old string eg Y:\">
+                    Y:
+                </TextBox>
             </StackPanel>
             <StackPanel Style="{StaticResource stack1}">
                 <Label Content="Ersetze durch:" Target="{Binding ElementName=textBox_searchFor}" Style="{StaticResource label1}"/>
-                <TextBox Name="textBox_replace" ToolTip="Enter new string"></TextBox>
+                <TextBox Name="textBox_replace2" ToolTip="Enter new string" Visibility="Collapsed">
+                    \\afs\.tu-chemnitz.de\project\mht_lehre\060 Material\020 Aufgabensammlung
+                </TextBox>
+                <ComboBox Name="textBox_replace" Background="LightGray" IsEditable="True"  Height="20"  MinWidth="400" MinHeight="20" IsTextSearchEnabled="True" Text="\\afs\.tu-chemnitz.de\project">
+                    <ComboBoxItem>\\afs\.tu-chemnitz.de\project</ComboBoxItem>
+                    <ComboBoxItem>\\afs\tu-chemnitz.de\project</ComboBoxItem>
+                    <ComboBoxItem>\\afs\tu-chemnitz.de\project\mht_haupt</ComboBoxItem>
+                    <ComboBoxItem>\\afs\.tu-chemnitz.de\project\mht_transfer</ComboBoxItem>
+                    <ComboBoxItem>\\afs\.tu-chemnitz.de\project\mht_lehre</ComboBoxItem>
+                    <ComboBoxItem>\\afs\.tu-chemnitz.de\project\mht_projekt</ComboBoxItem>
+                    <ComboBoxItem>\\afs\.tu-chemnitz.de\project\mht_studarb</ComboBoxItem>
+                </ComboBox>
+               <!-- <StackPanel Orientation="Horizontal" Margin="4">
+                    <Button MinWidth="40" Click="Button_Click_1" ToolTip="Insert the selected path into the textbox above">Insert</Button>
+                    <ComboBox Name="cmbbox1" IsEditable="True" Margin="10 0 0 0" Height="20" Background="DarkRed" MinWidth="400" MinHeight="20" IsTextSearchEnabled="True" Text="\\afs\.tu-chemnitz.de\project">
+                        <ComboBoxItem>\\afs\.tu-chemnitz.de\project</ComboBoxItem>
+                        <ComboBoxItem>\\afs\tu-chemnitz.de\project</ComboBoxItem>
+                        <ComboBoxItem>\\afs\tu-chemnitz.de\project\mht_haupt</ComboBoxItem>
+                        <ComboBoxItem>\\afs\.tu-chemnitz.de\project\mht_transfer</ComboBoxItem>
+                        <ComboBoxItem>\\afs\.tu-chemnitz.de\project\mht_lehre</ComboBoxItem>
+                        <ComboBoxItem>\\afs\.tu-chemnitz.de\project\mht_projekt</ComboBoxItem>
+                        <ComboBoxItem>\\afs\.tu-chemnitz.de\project\mht_studarb</ComboBoxItem>
+                    </ComboBox>
+                </StackPanel>-->
+                
             </StackPanel>        
             
             
